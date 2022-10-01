@@ -9,7 +9,7 @@
 -- eurorack patches.
 --
 -- Requirements:
--- - Internet Connection
+-- - Internet connection
 -- - Crow
 -- > out 1&2: latitude (-5-5V)
 -- > out 3&4: longitude (0-10V)
