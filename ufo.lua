@@ -1,7 +1,7 @@
 -- ufo
 -- v0.1 @duncangeere
 --
--- unworldly frequency oscillator
+-- ultra-low frequency oscillator
 -- 
 -- use the current position of
 -- the international space
