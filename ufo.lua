@@ -11,10 +11,18 @@
 -- Requirements:
 -- - Internet connection
 -- - Crow
--- > out 1&2: latitude (-5-5V)
--- > out 3&4: longitude (0-10V)
+-- > out 1: latitude (-5-5V)
+-- > out 2: longitude (0-10V)
+-- > out 3: distance from your
+--   position to ISS (0-10V)
+--   (only if enabled in script)
 --
 engine.name = "PolyPerc" -- Pick synth engine
+
+-- Set your personal latitude and longitude here
+localLat = 56.04673;
+localLon = 12.69437;
+uselocal = true;
 
 local json = include("lib/json")
 -- https://github.com/rxi/json.lua
@@ -67,13 +75,13 @@ function grabdata_clock()
         process(dl)
         areweloaded = true
 
-        local lat_volts = map(lat, -maxlat, maxlat, -5, 5)
-        local lon_volts = map(lon, -180, 180, 0, 10)
-        for i = 1, 2 do crow.output[i].volts = lat_volts end
-        for i = 3, 4 do crow.output[i].volts = lon_volts end
+        -- Set crow output voltages
+        crow.output[1].volts = map(lat, -maxlat, maxlat, -5, 5)
+        crow.output[2].volts = map(lon, -180, 180, 0, 10)
+        if uselocal then crow.output[3].volts = map(dist, 0, 1, 0, 10) end
 
         screen_dirty = true
-        clock.sleep(30)
+        clock.sleep(30) -- get data every 30 seconds
     end
 end
 
@@ -86,6 +94,12 @@ function process(download)
     lon = everything.longitude
     print("latitude: " .. lat)
     print("longitude: " .. lon)
+
+    if (uselocal) then
+        dist = distance(lat, lon, localLat, localLon)
+        print("distance: " .. dist)
+    end
+
     print(" ")
 end
 
@@ -93,7 +107,7 @@ end
 function redraw()
 
     -- check if data is loaded
-    if (areweloaded == true) then
+    if (areweloaded) then
         screen.clear()
         screen.aa(1)
         screen.font_size(10)
@@ -108,7 +122,6 @@ function redraw()
         x = map(lon, -180, 180, 0, 128)
         y = map(lat, -90, 90, 64, 0)
         screen.display_png(_path.code .. 'ufo/iss.png', x - 4.5, y - 2.5)
-        screen.stroke()
 
     else
         screen.aa(1)
@@ -167,4 +180,24 @@ function map(n, start, stop, newStart, newStop, withinBounds)
     else
         return math.max(math.min(value, newStart), newStop)
     end
+end
+
+-- Function to calculate great circle distance 
+-- between lat/lon coordinates. Max 1, Min 0
+-- Modded version of this formula:
+-- https://forums.x-plane.org/index.php?/forums/topic/156027-calculate-distance-great-circle-function/
+
+function distance(lat1, lon1, lat2, lon2)
+    local lat1r = lat1 / 180 * math.pi
+    local lon1r = lon1 / 180 * math.pi
+    local lat2r = lat2 / 180 * math.pi
+    local lon2r = lon2 / 180 * math.pi
+    local dlonr = lon2r - lon1r
+    local dlatr = lat2r - lat1r
+
+    local a = math.sin(dlatr / 2) * math.sin(dlatr / 2) + math.cos(lat1r) *
+                  math.cos(lat2r) * math.sin(dlonr / 2) * math.sin(dlonr / 2)
+    local b = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    return uselocal and b / math.pi or 0;
 end
