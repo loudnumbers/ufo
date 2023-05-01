@@ -27,6 +27,10 @@
 --   (enable in script)
 --
 
+MusicUtil = require "musicutil"
+ns = include("ufo/lib/notes_scales")
+include("ufo/lib/midi_helper")
+
 -- Set your personal latitude and longitude here
 local localLat = 56.04673;
 local localLon = 12.69437;
@@ -80,7 +84,7 @@ local areweloaded = false
 -- Init function
 function init()
     -- add the engine parameters
-    addparams()
+    add_params()
 
     -- start a clock to refresh the data
     clock.run(grabdata_clock)
@@ -227,7 +231,7 @@ function redraw()
 end
 
 -- All the parameters
-function addparams()
+function add_params()
     local function strip_trailing_zeroes(s)
         return string.format('%.2f', s):gsub("%.?0+$", "")
     end
@@ -283,12 +287,13 @@ function addparams()
     )
 
     ------------------------------
-    -- voice controls
+    -- reverb controls
     ------------------------------
+    params:add_separator('header', 'reverb controls')
 
     -- decay control
     params:add_control('eng_decay', 'decay',
-        controlspec.new(0, 0.9, 'lin', 0.001, 0.3, '', 0.005))
+        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_decay',
         function(x)
             engine.detune(x)
@@ -328,26 +333,18 @@ function addparams()
 
     -- delay control
     params:add_control('eng_delay', 'delay',
-        controlspec.new(0, 1, 'lin', 0.001, 0.3, '', 0.005))
+        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_delay',
         function(x)
             engine.detune(x)
             screen_dirty = true
         end
     )
-
-    -- Root Note
-    params:add {
-        type = "number",
-        id = "root_note",
-        name = "root note",
-        min = 0,
-        max = 127,
-        default = math.random(50, 60),
-        formatter = function(param)
-            return musicutil.note_num_to_name(param:get(), true)
-        end
-    }
+    -- add the notes_scales params
+    ns.add_params()
+    ns.build_scale()
+    get_midi_devices()
+    params:bang()
 end
 
 -- Check if the screen needs redrawing 15 times a second

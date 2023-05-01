@@ -12,15 +12,11 @@ Engine_SupSawEV : CroneEngine {
   var effectsBus;
   var controlBus;
   var <routine;
+  var num_notes = 7;
   var notes = #[60, 61, 63, 65, 72, 84, 32];
   var ampEV = 0.5;
   var mixEV = 0.5;
   var detuneEV = 0.5;
-
-  // var ampEV=0.5;
-  // var mixEv;
-  // var detuneEv;
-  
 
   *new { arg context, doneCallback;
     ^super.new(context, doneCallback);
@@ -28,14 +24,9 @@ Engine_SupSawEV : CroneEngine {
   
   alloc {
     voiceGroup = Group.head(context.xg);
-    // voiceGroup = ParGroup.head(context.xg);
     voices = Array.new();
     
     effectsBus = Bus.audio(context.server, 1);
-
-    // ampE=1;
-    // mixEv=0.5;
-    // detuneEv=0.5;
     
     SynthDef(\superSaw,{
       arg out,freq = 523.3572, mix=0.75, detune = 0.75, amp=1;
@@ -66,14 +57,14 @@ Engine_SupSawEV : CroneEngine {
       detuneFactor = freq * detuneCurve.(detune);
       freqs = [
         (freq - (detuneFactor * 0.11002313)),
-        // (freq - (detuneFactor * 0.06288439)),
+        (freq - (detuneFactor * 0.06288439)),
         (freq - (detuneFactor * 0.01952356)),
         // (freq + (detuneFactor * 0)),
         (freq + (detuneFactor * 0.01991221)),
-        // (freq + (detuneFactor * 0.06216538)),
+        (freq + (detuneFactor * 0.06216538)),
         (freq + (detuneFactor * 0.10745242))
       ];
-      side = Mix.fill(4, { |n|
+      side = Mix.fill(6, { |n|
         LFSaw.ar(freqs[n], Rand(0, 2))
       });
 
@@ -88,6 +79,8 @@ Engine_SupSawEV : CroneEngine {
       // moog ladder filter
       sig = MoogLadder.ar(Mix(sig ! 2), LinExp.kr(LFCub.kr(0.1, 0.5*pi), -1, 1, 400, 8500), 0.75);
 
+      // sig = Limiter.ar(sig, 0.4, 0.01);
+      
       Out.ar(out,sig*amp*EnvGen.kr(env,doneAction: Done.freeSelf));
       // Out.ar(out,sig*amp);
     }).add; // superSaw SynthDef
@@ -97,10 +90,6 @@ Engine_SupSawEV : CroneEngine {
     effects = SynthDef(\effects, {
       
       //ErbeVerb emulation
-      // arg in, out, trigger_frequency=1, effect_pitchshift=0.5, pitchshift_offset=0, base_note = 24,
-      // var sig = In.ar(in, 2), pitch_ratio;
-
-      // var input = In.ar(\input.ir, 1);
       arg in, out;
       var input = In.ar(in, 1);
       var decay = \decay.kr(0.3);
@@ -111,8 +100,6 @@ Engine_SupSawEV : CroneEngine {
       var delayTime = \delay.kr(0.3) + [0, 0.002, 0.003, 0.005];
       var modulator = SinOsc.kr(\modrate.kr(0.05), [0, 0.5, 0.75, 1], mul:modulation);
       
-      (["notes",notes]).postln;
-      
       2.do({ arg i;
         loop[i] = loop[i] + input;
       });
@@ -122,20 +109,17 @@ Engine_SupSawEV : CroneEngine {
         snd = AllpassC.ar(snd, 0.015, modulator[i].madd(allpassTime[i], allpassTime[i]), 0.015);
         loop[i] = DelayC.ar(snd, 3, modulator[i].madd(delayTime[i], delayTime[i]));
       });
+
       ReplaceOut.ar(out, [loop[0] + loop[3], loop[1] + loop[2]]);
-      // ReplaceOut.ar(in, [loop[0] + loop[3], loop[1] + loop[2]]);
       loop = [loop[0] - loop[1], loop[0] + loop[1], loop[2] - loop[3], loop[2] + loop[3]];
       loop = [loop[0] - loop[2], loop[0] + loop[2], loop[1] - loop[3], loop[1] + loop[3]];
       LocalOut.ar(loop * decay);
-      // LocalOut.ar(loop * decay * 0.5);
-      // Out.ar(out, sig);
     }).play(target: context.xg, args: [\in, effectsBus, \out, context.out_b], addAction: \addToTail);
 
 
 
     context.server.sync;
     
-    // (["effectsBus",effectsBus]).postln;
     routine = Routine({  
       loop({
 
@@ -148,8 +132,6 @@ Engine_SupSawEV : CroneEngine {
             \detune, detuneEV,
             \amp, ampEV,
             \out, effectsBus,
-            // \group, srcSynthG,
-            // \out, srcBus
           ],
           target: voiceGroup).onFree({ 
             // (["free newVoice",newVoice]).postln;
@@ -201,6 +183,30 @@ Engine_SupSawEV : CroneEngine {
       effects.set(\delay, LinLin.kr(msg[1],0,127,0,5));
     });
 
+    //note commands
+    this.addCommand("update_num_notes", "f", { arg msg;
+      num_notes = msg[1];
+    });
+
+    this.addCommand("update_notes", "ffffffffffffffffffffffff", { arg msg;
+      var newNotes = Array.new(num_notes);
+      var scale;
+      for (0, num_notes-1, { arg i;
+        var val = msg[i+1];
+        newNotes.insert(i,val);
+      }); 
+      notes=newNotes;
+      (["update scale",notes]).postln;
+    });
+
+    //stop/start
+    this.addCommand("stop", "f", { arg msg;
+      routine.stop();
+    });
+    
+    this.addCommand("start", "f", { arg msg;
+      routine.value();
+    });
 
   }
 
@@ -215,6 +221,5 @@ Engine_SupSawEV : CroneEngine {
     effects.free;
     effectsBus.free;
     controlBus.free;
-	  //replyFunc.free;
   }
 }
