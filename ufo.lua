@@ -49,8 +49,8 @@ local mappings = {
         parameter = "eng_decay", -- Change this for different sound mappings
         inmin = -180,            -- Don't change this
         inmax = 180,             -- Don't change this
-        outmin = 0,              -- Change this to adjust the range of permitted values
-        outmax = 1               -- Change this to adjust the range of permitted values
+        outmin = 0.2,            -- Change this to adjust the range of permitted values
+        outmax = 1.4             -- Change this to adjust the range of permitted values
     },
     distance = {
         parameter = "eng_detune", -- Change this for different sound mappings
