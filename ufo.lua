@@ -207,7 +207,7 @@ function redraw()
         screen.clear()
         screen.aa(1)
         screen.font_size(10)
-        screen.font_face(4)
+        screen.font_face(1)
 
         -- draw the map
         screen.level(2)
@@ -219,15 +219,15 @@ function redraw()
         y = map(lat, -90, 90, 64, 0)
         screen.display_png(_path.code .. 'ufo/iss.png', x - 4.5, y - 2.5)
 
-        if (audiobroadcast) then
-            screen.move(128, 64)
-            screen.font_size(8)
-            screen.text_right("press k3 to receive audio signals")
+        if (not audiobroadcast) then
+            screen.move(64, 62)
+            screen.level(16)
+            screen.font_size(6)
+            screen.text_center("press k3 to receive audio signals")
         end
     else
         screen.aa(1)
         screen.font_size(8)
-        screen.font_face(1)
         screen.level(15)
         screen.move(64, 32)
         screen.text_center("please wait - loading...")
@@ -257,7 +257,7 @@ function add_params()
             2,     -- max
             'lin', -- warp
             0.001, -- output quantization
-            1,     -- default value
+            0,     -- default value
             '',    -- string for units
             0.005  -- adjustment quantization
         ),
