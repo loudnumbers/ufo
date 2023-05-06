@@ -39,11 +39,11 @@ local usedist = true;
 -- Set custom engine mappings if you desire
 local mappings = {
     latitude = {
-        parameter = "eng_modulation", -- Change this for different sound mappings
-        inmin = -51.6,                -- Don't change this
-        inmax = 51.6,                 -- Don't change this
-        outmin = 0,                   -- Change this to adjust the range of permitted values
-        outmax = 1                    -- Change this to adjust the range of permitted values
+        parameter = "eng_absorb", -- Change this for different sound mappings
+        inmin = -51.6,            -- Don't change this
+        inmax = 51.6,             -- Don't change this
+        outmin = 0,               -- Change this to adjust the range of permitted values
+        outmax = 0.6              -- Change this to adjust the range of permitted values
     },
     longitude = {
         parameter = "eng_decay", -- Change this for different sound mappings
@@ -57,7 +57,7 @@ local mappings = {
         inmin = 0,                -- Don't change this
         inmax = 1,                -- Don't change this
         outmin = 0,               -- Change this to adjust the range of permitted values
-        outmax = 1                -- Change this to adjust the range of permitted values
+        outmax = 0.8              -- Change this to adjust the range of permitted values
     }
 }
 
