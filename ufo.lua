@@ -23,7 +23,7 @@
 -- > out 1: latitude (-5-5V)
 -- > out 2: longitude (0-10V)
 -- > out 3: distance from your
---   position to ISS (0-10V)
+--   coordinates to ISS (0-10V)
 --   (enable in script)
 --
 
@@ -31,7 +31,7 @@ MusicUtil = require "musicutil"
 ns = include("ufo/lib/notes_scales")
 include("ufo/lib/midi_helper")
 
--- Set your personal latitude and longitude here
+-- Set your personal latitude and longitude coordinates here:
 local localLat = 56.04673;
 local localLon = 12.69437;
 local usedist = true;
@@ -80,6 +80,7 @@ local lat
 local lon
 local dist
 local areweloaded = false
+local audiobroadcast = false
 
 -- Init function
 function init()
@@ -217,6 +218,12 @@ function redraw()
         x = map(lon, -180, 180, 0, 128)
         y = map(lat, -90, 90, 64, 0)
         screen.display_png(_path.code .. 'ufo/iss.png', x - 4.5, y - 2.5)
+
+        if (audiobroadcast) then
+            screen.move(128, 64)
+            screen.font_size(8)
+            screen.text_right("press k3 to receive audio signals")
+        end
     else
         screen.aa(1)
         screen.font_size(8)
@@ -397,7 +404,19 @@ function distance(lat1, lon1, lat2, lon2)
 end
 
 function enc(n, d)
-    -- Some code should go here that doesn't start playing the engine until e.g. button 3 is pressed
+end
+
+-- when a key is depressed, toggle audio playback
+function key(n, z)
+    if n == 3 and z == 1 then
+        if audiobroadcast then
+            audiobroadcast = false
+            params:set("eng_amp", 0)
+        else
+            audiobroadcast = true
+            params:set("eng_amp", 1)
+        end
+    end
 end
 
 function cleanup()
