@@ -37,7 +37,7 @@ local localLon = 12.69437;
 local usedist = true;
 
 -- Set custom engine mappings if you desire
-mappings = {
+local mappings = {
     latitude = {
         parameter = "eng_modulation", -- Change this for different sound mappings
         inmin = -51.6,                -- Don't change this
@@ -397,7 +397,7 @@ function distance(lat1, lon1, lat2, lon2)
 end
 
 function enc(n, d)
-
+    -- Some code should go here that doesn't start playing the engine until e.g. button 3 is pressed
 end
 
 function cleanup()
