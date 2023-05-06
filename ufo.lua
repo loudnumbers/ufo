@@ -38,27 +38,36 @@ local usedist = true;
 
 -- Set custom engine mappings if you desire
 local mappings = {
-    latitude = {
+    -- Latitude mappings
+    latitude = { {
         parameter = "eng_absorb", -- Change this for different sound mappings
-        inmin = -51.6,            -- Don't change this
+        inmin = 0,                -- Don't change this
         inmax = 51.6,             -- Don't change this
         outmin = 0,               -- Change this to adjust the range of permitted values
         outmax = 0.6              -- Change this to adjust the range of permitted values
-    },
-    longitude = {
+    }, {
+        parameter = "eng_delay",  -- Change this for different sound mappings
+        inmin = 0,                -- Don't change this
+        inmax = 51.6,             -- Don't change this
+        outmin = 0,               -- Change this to adjust the range of permitted values
+        outmax = 1.05             -- Change this to adjust the range of permitted values
+    } },
+    -- Longitude mappings
+    longitude = { {
         parameter = "eng_decay", -- Change this for different sound mappings
         inmin = -180,            -- Don't change this
         inmax = 180,             -- Don't change this
         outmin = 0.2,            -- Change this to adjust the range of permitted values
         outmax = 1.4             -- Change this to adjust the range of permitted values
-    },
-    distance = {
+    } },
+    -- Distance mappings
+    distance = { {
         parameter = "eng_detune", -- Change this for different sound mappings
         inmin = 0,                -- Don't change this
         inmax = 1,                -- Don't change this
         outmin = 0,               -- Change this to adjust the range of permitted values
-        outmax = 0.8              -- Change this to adjust the range of permitted values
-    }
+        outmax = 1                -- Change this to adjust the range of permitted values
+    } }
 }
 
 -- Select synth engine
@@ -125,55 +134,34 @@ function grabdata_clock()
 
         -- Update engine parameters
         -- latitude
-        params:set(mappings.latitude.parameter,
-            map(lat,
-                mappings.latitude.inmin,
-                mappings.latitude.inmax,
-                mappings.latitude.outmin,
-                mappings.latitude.outmax))
+        -- note, uses math.abs() - so values *away from the equator* will be larger
+        for i, v in ipairs(mappings.latitude) do
+            params:set(v.parameter, map(math.abs(lat), v.inmin, v.inmax, v.outmin, v.outmax))
+        end
 
         -- longitude
-        params:set(
-            mappings.longitude.parameter,
-            map(lon,
-                mappings.longitude.inmin,
-                mappings.longitude.inmax,
-                mappings.longitude.outmin,
-                mappings.longitude.outmax))
+        for i, v in ipairs(mappings.longitude) do
+            params:set(v.parameter, map(lon, v.inmin, v.inmax, v.outmin, v.outmax))
+        end
 
         -- distance
         if usedist then
-            params:set(
-                mappings.distance.parameter,
-                map(dist,
-                    mappings.distance.inmin,
-                    mappings.distance.inmax,
-                    mappings.distance.outmin,
-                    mappings.distance.outmax))
+            for i, v in ipairs(mappings.distance) do
+                params:set(v.parameter, map(dist, v.inmin, v.inmax, v.outmin, v.outmax))
+            end
         end
 
         -- Set crow output voltages
         -- latitude
-        crow.output[1].volts = map(
-            lat,
-            mappings.latitude.inmin,
-            mappings.latitude.inmax,
-            -5, 5)
+        -- note that this does not use math.abs() - you'll get negative values out for negative latitudes
+        crow.output[1].volts = map(lat, -51.6, 51.6, -5, 5)
 
         -- longitude
-        crow.output[2].volts = map(
-            lon,
-            mappings.longitude.inmin,
-            mappings.longitude.inmax,
-            0, 10)
+        crow.output[2].volts = map(lon, -180, 180, 0, 10)
 
         -- distance
         if usedist then
-            crow.output[3].volts = map(
-                dist,
-                mappings.distance.inmin,
-                mappings.distance.inmax,
-                0, 10)
+            crow.output[3].volts = map(dist, 0, 1, 0, 10)
         end
 
         screen_dirty = true
