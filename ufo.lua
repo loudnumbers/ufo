@@ -268,7 +268,7 @@ function add_params()
 
     -- mix control
     params:add_control('eng_mix', 'mix',
-        controlspec.new(0, 1, 'lin', 0.001, 0.5, '', 0.005))
+      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_mix',
         function(x)
             engine.mix(x)
@@ -278,10 +278,39 @@ function add_params()
 
     -- detune control
     params:add_control('eng_detune', 'detune',
-        controlspec.new(0, 1, 'lin', 0.001, 0.5, '', 0.005))
+      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_detune',
         function(x)
             engine.detune(x)
+            screen_dirty = true
+        end
+    )
+
+    -- frequency cutoof min control
+    params:add_control('eng_cutoff_min', 'filter cutoff min',
+      controlspec.new(40, 16000, 'exp', 10, 400, ''))
+    params:set_action('eng_cutoff_min',
+        function(x)
+
+            if x > params:get("eng_cutoff_max") then
+              x = params:get("eng_cutoff_max")
+              params:set("eng_cutoff_min",x)
+            end
+            engine.cutoffMin(x)
+            screen_dirty = true
+        end
+    )
+
+    -- frequency cutoof max control
+    params:add_control('eng_cutoff_max', 'filter cutoff max',
+      controlspec.new(40, 16000, 'exp', 10, 8500, ''))
+    params:set_action('eng_cutoff_max',
+          function(x)
+            if x < params:get("eng_cutoff_min") then
+              x = params:get("eng_cutoff_min")
+              params:set("eng_cutoff_max",x)
+            end
+            engine.cutoffMax(x)
             screen_dirty = true
         end
     )
@@ -293,50 +322,50 @@ function add_params()
 
     -- decay control
     params:add_control('eng_decay', 'decay',
-        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
+      controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_decay',
         function(x)
-            engine.detune(x)
+            engine.decay(x)
             screen_dirty = true
         end
     )
 
     -- absorb control
     params:add_control('eng_absorb', 'absorb',
-        controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
+      controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
     params:set_action('eng_absorb',
         function(x)
-            engine.detune(x)
+            engine.absorb(x)
             screen_dirty = true
         end
     )
 
     -- modulation control
     params:add_control('eng_modulation', 'modulation',
-        controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
+      controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
     params:set_action('eng_modulation',
         function(x)
-            engine.detune(x)
+            engine.modulation(x)
             screen_dirty = true
         end
     )
 
     -- modRate control
     params:add_control('eng_modRate', 'modRate',
-        controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005))
+      controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005)) 
     params:set_action('eng_modRate',
         function(x)
-            engine.detune(x)
+            engine.modRate(x)
             screen_dirty = true
         end
     )
 
     -- delay control
     params:add_control('eng_delay', 'delay',
-        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
+    controlspec.new(0, 3, 'lin', 0.001, 0.3, '', 0.005)) 
     params:set_action('eng_delay',
         function(x)
-            engine.detune(x)
+            engine.delay(x)
             screen_dirty = true
         end
     )
@@ -401,5 +430,5 @@ function enc(n, d)
 end
 
 function cleanup()
-
+  
 end
