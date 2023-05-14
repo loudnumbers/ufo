@@ -366,6 +366,9 @@ function add_params()
     )
     -- add the notes_scales params
     ns.add_params()
+    params:add_binary("reset_notes", "Reset note list", "momentary")
+    params:set_action("reset_notes", reset_default_notes)
+
     ns.build_scale()
     get_midi_devices()
     params:bang()

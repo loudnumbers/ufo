@@ -56,4 +56,13 @@ midi_event = function(data)
   end
 end
 
-
+function reset_default_notes()
+  notes = { 60, 61, 63, 65, 72, 84, 32 }
+  for i = 1, #notes do
+    if params:get("quantize") == 2 then
+      notes[i] = ns.quantize_note(notes[i])
+    end
+  end
+  engine.update_num_notes(#notes)
+  engine.update_notes(table.unpack(notes))
+end
