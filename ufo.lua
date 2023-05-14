@@ -264,7 +264,7 @@ function add_params()
             2,     -- max
             'lin', -- warp
             0.001, -- output quantization
-            0,     -- default value
+            1,     -- default value
             '',    -- string for units
             0.005  -- adjustment quantization
         ),
@@ -449,14 +449,16 @@ function key(n, z)
     if n == 3 and z == 1 then
         if audiobroadcast then
             audiobroadcast = false
-            params:set("eng_amp", 0)
+            engine.stop(0)
+            --params:set("eng_amp", 0)
         else
             audiobroadcast = true
-            params:set("eng_amp", 1)
+            engine.start(0)
+            --params:set("eng_amp", 1)
         end
     end
 end
 
 function cleanup()
-    engine.stop()
+    engine.stop(0)
 end

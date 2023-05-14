@@ -147,7 +147,7 @@ Engine_SupSawEV : CroneEngine {
         voices.addFirst(newVoice);
         2.wait;
       });
-    }).play();
+    });
 
     //voice commands
     this.addCommand("amp", "f", { arg msg;
@@ -221,7 +221,7 @@ Engine_SupSawEV : CroneEngine {
     });
     
     this.addCommand("start", "f", { arg msg;
-      routine.value();
+      routine.play();
     });
 
   }
