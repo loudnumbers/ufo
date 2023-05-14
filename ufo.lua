@@ -137,13 +137,13 @@ function grabdata_clock()
     while true do
         dl = util.os_capture("curl -s -m 30 -k " .. api)
         if (#dl > 75) then
-            print("API successfully reached")
+            print("ISS successfully reached, downloading coordinates.")
             local File = io.open(_path.code .. "ufo/" .. backup, 'w')
             File:write(dl)
-            print("New backup saved")
+            --print("New backup saved")
             File:close()
         else
-            print("Failed to access API, using backup instead.")
+            print("Failed to access ISS, using backup data instead.")
             io.input(_path.code .. "ufo/" .. backup)
             dl = io.read("*all")
         end
@@ -449,10 +449,12 @@ function key(n, z)
     if n == 3 and z == 1 then
         if audiobroadcast then
             audiobroadcast = false
+            print("Audio signal lost")
             engine.stop(0)
             --params:set("eng_amp", 0)
         else
             audiobroadcast = true
+            print("Receiving audio signal")
             engine.start(0)
             --params:set("eng_amp", 1)
         end

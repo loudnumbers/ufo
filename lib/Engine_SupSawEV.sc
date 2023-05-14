@@ -221,6 +221,7 @@ Engine_SupSawEV : CroneEngine {
     });
     
     this.addCommand("start", "f", { arg msg;
+      routine.reset();
       routine.play();
     });
 
