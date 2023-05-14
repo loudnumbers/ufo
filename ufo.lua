@@ -440,5 +440,5 @@ function key(n, z)
 end
 
 function cleanup()
-  
+    engine.stop()
 end
