@@ -13,6 +13,7 @@ function set_notes(on_off, note)
       setting_notes = true
       setting_notes_ix = 0
       notes = {}
+      output = {}
     end
     if params:get("quantize") == 2 then
       note = ns.quantize_note(note)
@@ -21,7 +22,13 @@ function set_notes(on_off, note)
     setting_notes_ix = setting_notes_ix + 1
     print("add note", note, setting_notes_ix)
     engine.update_num_notes(#notes)
-    engine.update_notes(table.unpack(notes))
+    for i = 1, 24 do
+      output[i] = 9999
+    end
+    for i = 1, #notes do
+      output[i] = notes[i]
+    end
+    engine.update_notes(table.unpack(output))
   else
     setting_notes_ix = setting_notes_ix - 1
     if setting_notes_ix == 0 then
@@ -45,11 +52,11 @@ midi_event = function(data)
   else
     local note_to_play = data[2]
     if note_to_play then
-      if data[1] == 144 then   -- note off
-        print("note on", note_to_play)
+      if data[1] == 144 then -- note off
+        --print("note on", note_to_play)
         set_notes("on", note_to_play)
-      elseif data[1] == 128 then   -- note off
-        print("note off", note_to_play)
+      elseif data[1] == 128 then -- note off
+        --print("note off", note_to_play)
         set_notes("off", note_to_play)
       end
     end

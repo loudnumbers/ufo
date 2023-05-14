@@ -145,7 +145,6 @@ Engine_SupSawEV : CroneEngine {
         // (["ampEV",ampEV]).postln;
         // (["voices",voices]).postln;
         voices.addFirst(newVoice);
-        
         2.wait;
       });
     }).play();
@@ -208,7 +207,7 @@ Engine_SupSawEV : CroneEngine {
       var scale;
       for (0, num_notes-1, { arg i;
         var val = msg[i+1];
-        if (val>=0, {
+        if (val!=9999, {
           newNotes.insert(i,val)
           });
       }); 
