@@ -208,7 +208,9 @@ Engine_SupSawEV : CroneEngine {
       var scale;
       for (0, num_notes-1, { arg i;
         var val = msg[i+1];
-        newNotes.insert(i,val);
+        if (val>=0, {
+          newNotes.insert(i,val)
+          });
       }); 
       notes=newNotes;
       (["update scale",notes]).postln;
