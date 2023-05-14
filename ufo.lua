@@ -118,6 +118,7 @@ function init()
 
     -- Start a clock to refresh the screen
     screen_dirty = true
+
     redraw_timer = metro.init(
         function() -- what to perform at every tick
             if screen_dirty == true then
@@ -281,7 +282,7 @@ function add_params()
 
     -- mix control
     params:add_control('eng_mix', 'mix',
-      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_mix',
         function(x)
             engine.mix(x)
@@ -291,7 +292,7 @@ function add_params()
 
     -- detune control
     params:add_control('eng_detune', 'detune',
-      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_detune',
         function(x)
             engine.detune(x)
@@ -301,13 +302,12 @@ function add_params()
 
     -- frequency cutoof min control
     params:add_control('eng_cutoff_min', 'filter cutoff min',
-      controlspec.new(40, 16000, 'exp', 10, 400, ''))
+        controlspec.new(40, 16000, 'exp', 10, 400, ''))
     params:set_action('eng_cutoff_min',
         function(x)
-
             if x > params:get("eng_cutoff_max") then
-              x = params:get("eng_cutoff_max")
-              params:set("eng_cutoff_min",x)
+                x = params:get("eng_cutoff_max")
+                params:set("eng_cutoff_min", x)
             end
             engine.cutoffMin(x)
             screen_dirty = true
@@ -316,12 +316,12 @@ function add_params()
 
     -- frequency cutoof max control
     params:add_control('eng_cutoff_max', 'filter cutoff max',
-      controlspec.new(40, 16000, 'exp', 10, 8500, ''))
+        controlspec.new(40, 16000, 'exp', 10, 8500, ''))
     params:set_action('eng_cutoff_max',
-          function(x)
+        function(x)
             if x < params:get("eng_cutoff_min") then
-              x = params:get("eng_cutoff_min")
-              params:set("eng_cutoff_max",x)
+                x = params:get("eng_cutoff_min")
+                params:set("eng_cutoff_max", x)
             end
             engine.cutoffMax(x)
             screen_dirty = true
@@ -335,7 +335,7 @@ function add_params()
 
     -- decay control
     params:add_control('eng_decay', 'decay',
-      controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
+        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_decay',
         function(x)
             engine.decay(x)
@@ -345,7 +345,7 @@ function add_params()
 
     -- absorb control
     params:add_control('eng_absorb', 'absorb',
-      controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
     params:set_action('eng_absorb',
         function(x)
             engine.absorb(x)
@@ -355,7 +355,7 @@ function add_params()
 
     -- modulation control
     params:add_control('eng_modulation', 'modulation',
-      controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
     params:set_action('eng_modulation',
         function(x)
             engine.modulation(x)
@@ -365,7 +365,7 @@ function add_params()
 
     -- modRate control
     params:add_control('eng_modRate', 'modRate',
-      controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005)) 
+        controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005))
     params:set_action('eng_modRate',
         function(x)
             engine.modRate(x)
@@ -375,7 +375,7 @@ function add_params()
 
     -- delay control
     params:add_control('eng_delay', 'delay',
-    controlspec.new(0, 3, 'lin', 0.001, 0.3, '', 0.005)) 
+        controlspec.new(0, 3, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_delay',
         function(x)
             engine.delay(x)
