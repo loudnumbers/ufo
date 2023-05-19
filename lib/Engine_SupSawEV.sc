@@ -82,7 +82,7 @@ Engine_SupSawEV : CroneEngine {
       /////////////////
       // moog ladder filter
       sig = MoogLadder.ar(Mix(sig ! 2), LinExp.kr(LFCub.kr(0.1, 0.5*pi), -1, 1, cutoffMin, cutoffMax), 0.75);
-      sig = HPF.ar(in: sig, freq: hpfCutoff) // CHANGE THIS
+      sig = HPF.ar(in: sig, freq: hpfCutoff); // CHANGE THIS
       sig = Limiter.ar(sig, 0.3, 0.01);
       
       Out.ar(out,sig*amp*EnvGen.kr(env,doneAction: Done.freeSelf));
