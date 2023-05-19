@@ -38,6 +38,16 @@ function set_notes(on_off, note)
   end
 end
 
+function quantize_notes_to_scale()
+  local output = {}
+  for i = 1, #notes do
+    local note = ns.quantize_note(notes[i])
+    table.insert(output, note)
+  end
+  notes = output
+  engine.update_notes(table.unpack(notes))
+end
+
 midi_event = function(data)
   local msg = midi.to_msg(data)
   if msg.type == "stop" or msg.type == "start" then

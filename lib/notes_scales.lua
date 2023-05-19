@@ -61,7 +61,10 @@ function ns.add_params()
 
   params:add { type = "option", id = "scale_mode", name = "scale mode",
     options = scale_names, default = 6,
-    action = function() ns.build_scale() end }
+    action = function()
+      quantize_notes_to_scale()
+      ns.build_scale()
+    end }
 
 
   params:add { type = "number", id = "root_note", name = "root note",
