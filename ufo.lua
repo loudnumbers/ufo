@@ -86,9 +86,9 @@ local backup = "data.json"
 
 -- Variables
 local dl
-local lat
-local lon
-local dist
+local lat = 0
+local lon = 0
+local dist = 0.2
 local areweloaded = false
 local audiobroadcast = false
 
