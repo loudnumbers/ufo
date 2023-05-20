@@ -169,7 +169,6 @@ function process(download)
     lon = everything.longitude
     print("latitude: " .. lat)
     print("longitude: " .. lon)
-
     if (usedist) then
         dist = distance(lat, lon, localLat, localLon)
         print("distance: " .. dist)
@@ -337,7 +336,7 @@ function add_params()
     )
 
     -- HPF frequency cutoff control
-    params:add_control('hpf_cutoff', 'highpass filter cutoff',
+    params:add_control('hpf_cutoff', 'high pass filter cutoff',
         controlspec.new(40, 16000, 'exp', 400, 8500, ''))
     params:set_action('hpf_cutoff',
         function(x)
@@ -480,5 +479,6 @@ function key(n, z)
 end
 
 function cleanup()
+    -- Stop the engine
     engine.stop(0)
 end
