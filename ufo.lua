@@ -37,6 +37,9 @@ local localLat = 56.04673;
 local localLon = 12.69437;
 local usedist = true;
 
+-- For testing
+api_update = false;
+
 -- Set custom engine mappings if you desire
 local mappings = {
     -- Latitude mappings
@@ -165,12 +168,20 @@ end
 function process(download)
     -- decode json
     local everything = json.decode(download)
-    lat = everything.latitude
-    lon = everything.longitude
+    if api_update then
+        print("Updating coordinates")
+        lat = everything.latitude
+        lon = everything.longitude
+        if (usedist) then
+            dist = distance(lat, lon, localLat, localLon)
+        end
+    else
+        print("Updates turned off")
+    end
+
     print("latitude: " .. lat)
     print("longitude: " .. lon)
     if (usedist) then
-        dist = distance(lat, lon, localLat, localLon)
         print("distance: " .. dist)
     end
 
@@ -481,4 +492,17 @@ end
 function cleanup()
     -- Stop the engine
     engine.stop(0)
+end
+
+-- For testing
+function setcoords(newlat, newlon, newdist)
+    newlat = newlat or lat
+    newlon = newlon or lon
+    newdist = newdist or dist
+    lat = newlat
+    lon = newlon
+    dist = newdist
+    update_engine()
+    update_crow()
+    screen_dirty = true
 end
