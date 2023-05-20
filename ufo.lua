@@ -149,37 +149,9 @@ function grabdata_clock()
         end
         process(dl)
         areweloaded = true
-
-        -- Update engine parameters
-        -- latitude
-        -- note, uses math.abs() - so values *away from the equator* will be larger
-        for i, v in ipairs(mappings.latitude) do
-            params:set(v.parameter, map(math.abs(lat), v.inmin, v.inmax, v.outmin, v.outmax))
-        end
-
-        -- longitude
-        for i, v in ipairs(mappings.longitude) do
-            params:set(v.parameter, map(lon, v.inmin, v.inmax, v.outmin, v.outmax))
-        end
-
-        -- distance
-        if usedist then
-            for i, v in ipairs(mappings.distance) do
-                params:set(v.parameter, map(dist, v.inmin, v.inmax, v.outmin, v.outmax))
-            end
-        end
-
-        -- Set crow output voltages
-        -- latitude
-        -- note that this does not use math.abs() - you'll get negative values out for negative latitudes
-        crow.output[1].volts = map(lat, -51.6, 51.6, -5, 5)
-
-        -- longitude
-        crow.output[2].volts = map(lon, -180, 180, 0, 10)
-
-        -- distance
-        if usedist then
-            crow.output[3].volts = map(dist, 0, 1, 0, 10)
+        if (api_update) then
+            update_engine()
+            update_crow()
         end
 
         screen_dirty = true
@@ -204,6 +176,42 @@ function process(download)
     end
 
     print(" ")
+end
+
+function update_engine()
+    -- Update engine parameters
+    -- latitude
+    -- note, uses math.abs() - so values *away from the equator* will be larger
+    for i, v in ipairs(mappings.latitude) do
+        params:set(v.parameter, map(math.abs(lat), v.inmin, v.inmax, v.outmin, v.outmax))
+    end
+
+    -- longitude
+    for i, v in ipairs(mappings.longitude) do
+        params:set(v.parameter, map(lon, v.inmin, v.inmax, v.outmin, v.outmax))
+    end
+
+    -- distance
+    if usedist then
+        for i, v in ipairs(mappings.distance) do
+            params:set(v.parameter, map(dist, v.inmin, v.inmax, v.outmin, v.outmax))
+        end
+    end
+end
+
+function update_crow()
+    -- Set crow output voltages
+    -- latitude
+    -- note that this does not use math.abs() - you'll get negative values out for negative latitudes
+    crow.output[1].volts = map(lat, -51.6, 51.6, -5, 5)
+
+    -- longitude
+    crow.output[2].volts = map(lon, -180, 180, 0, 10)
+
+    -- distance
+    if usedist then
+        crow.output[3].volts = map(dist, 0, 1, 0, 10)
+    end
 end
 
 -- Visuals
