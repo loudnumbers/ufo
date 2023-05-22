@@ -96,7 +96,7 @@ Engine_SupSawEV : CroneEngine {
       //ErbeVerb emulation
       arg in, out;
       var input = In.ar(in, 1);
-      var decay = \decay.kr(0.3);
+      var decay = \decay.kr(0.1);
       var absorb = 100 * (200 ** \absorb.kr(0.1));
       var modulation = \modulation.kr(0.01);
       var loop = LocalIn.ar(4);
@@ -104,8 +104,6 @@ Engine_SupSawEV : CroneEngine {
       var delayTime = \delay.kr(0.3) + [0, 0.002, 0.003, 0.005];
       var modulator = SinOsc.kr(\modrate.kr(0.05), [0, 0.5, 0.75, 1], mul:modulation);
       
-      
-  
       2.do({ arg i;
         loop[i] = loop[i] + input;
       });
@@ -183,23 +181,23 @@ Engine_SupSawEV : CroneEngine {
 
     //reverb commands
     this.addCommand("decay", "f", { arg msg;
-      effects.set(\decay, LinLin.kr(msg[1],0,127,0,0.9));
+      effects.set(\decay, msg[1]);
     });
 
     this.addCommand("absorb", "f", { arg msg;
-      effects.set(\absorb, LinLin.kr(msg[1],0,127,0,3));
+      effects.set(\absorb, msg[1]);
     });
 
     this.addCommand("modulation", "f", { arg msg;
-      effects.set(\modulation, LinLin.kr(msg[1],0,127,0,1));
+      effects.set(\modulation, msg[1]);
     });
 
     this.addCommand("modRate", "f", { arg msg;
-      effects.set(\modRate, LinLin.kr(msg[1],0,127,0,1));
+      effects.set(\modRate, msg[1]);
     });
 
     this.addCommand("delay", "f", { arg msg;
-      effects.set(\delay, LinLin.kr(msg[1],0,127,0,5));
+      effects.set(\delay, msg[1]);
     });
 
     //note commands

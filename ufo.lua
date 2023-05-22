@@ -363,7 +363,8 @@ function add_params()
 
     -- decay control
     params:add_control('eng_decay', 'decay',
-        controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
+      controlspec.new(0, 0.2, 'lin', 0.001, 0.1, '', 0.005))
+      -- controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_decay',
         function(x)
             engine.decay(x)
