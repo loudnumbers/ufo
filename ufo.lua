@@ -23,42 +23,55 @@
 -- > out 1: latitude (-5-5V)
 -- > out 2: longitude (0-10V)
 -- > out 3: distance from your
---   position to ISS (0-10V)
+--   coordinates to ISS (0-10V)
 --   (enable in script)
 --
 
 MusicUtil = require "musicutil"
 ns = include("ufo/lib/notes_scales")
 include("ufo/lib/midi_helper")
+lfos = require 'lfo'
 
--- Set your personal latitude and longitude here
+-- Set your personal latitude and longitude coordinates here:
 local localLat = 56.04673;
 local localLon = 12.69437;
 local usedist = true;
 
+-- For testing
+api_update = false;
+
 -- Set custom engine mappings if you desire
-mappings = {
-    latitude = {
-        parameter = "eng_modulation", -- Change this for different sound mappings
-        inmin = -51.6,                -- Don't change this
-        inmax = 51.6,                 -- Don't change this
-        outmin = 0,                   -- Change this to adjust the range of permitted values
-        outmax = 1                    -- Change this to adjust the range of permitted values
-    },
-    longitude = {
+local mappings = {
+    -- Latitude mappings
+    latitude = { {
+        parameter = "eng_absorb", -- Change this for different sound mappings
+        inmin = 0,                -- Don't change this
+        inmax = 51.6,             -- Don't change this
+        outmin = 0,               -- Change this to adjust the range of permitted values
+        outmax = 0.6              -- Change this to adjust the range of permitted values
+    }, {
+        parameter = "eng_delay",  -- Change this for different sound mappings
+        inmin = 0,                -- Don't change this
+        inmax = 51.6,             -- Don't change this
+        outmin = 0,               -- Change this to adjust the range of permitted values
+        outmax = 1.05             -- Change this to adjust the range of permitted values
+    } },
+    -- Longitude mappings
+    longitude = { {
         parameter = "eng_decay", -- Change this for different sound mappings
         inmin = -180,            -- Don't change this
         inmax = 180,             -- Don't change this
-        outmin = 0,              -- Change this to adjust the range of permitted values
-        outmax = 1               -- Change this to adjust the range of permitted values
-    },
-    distance = {
+        outmin = 0.2,            -- Change this to adjust the range of permitted values
+        outmax = 1.4             -- Change this to adjust the range of permitted values
+    } },
+    -- Distance mappings
+    distance = { {
         parameter = "eng_detune", -- Change this for different sound mappings
         inmin = 0,                -- Don't change this
         inmax = 1,                -- Don't change this
         outmin = 0,               -- Change this to adjust the range of permitted values
         outmax = 1                -- Change this to adjust the range of permitted values
-    }
+    } }
 }
 
 -- Select synth engine
@@ -76,10 +89,11 @@ local backup = "data.json"
 
 -- Variables
 local dl
-local lat
-local lon
-local dist
+local lat = 0
+local lon = 0
+local dist = 0.2
 local areweloaded = false
+local audiobroadcast = false
 
 -- Init function
 function init()
@@ -89,8 +103,25 @@ function init()
     -- start a clock to refresh the data
     clock.run(grabdata_clock)
 
+    iss_brightness = 0;
+    brightness_lfo = lfos:add {
+        shape = 'saw', -- shape
+        min = 0,       -- min
+        max = 15,      -- max
+        depth = 1,     -- depth (0 to 1)
+        mode = 'free', -- mode
+        period = 1,    -- period (in seconds)
+        -- pass our 'scaled' value (bounded by min/max and depth) to the engine:
+        action = function(scaled, raw)
+            iss_brightness = math.floor(scaled)
+            screen_dirty = true
+        end -- action, always passes scaled and raw values
+    }
+    brightness_lfo:start()
+
     -- Start a clock to refresh the screen
     screen_dirty = true
+
     redraw_timer = metro.init(
         function() -- what to perform at every tick
             if screen_dirty == true then
@@ -109,70 +140,21 @@ function grabdata_clock()
     while true do
         dl = util.os_capture("curl -s -m 30 -k " .. api)
         if (#dl > 75) then
-            print("API successfully reached")
+            print("ISS successfully reached, downloading coordinates.")
             local File = io.open(_path.code .. "ufo/" .. backup, 'w')
             File:write(dl)
-            print("New backup saved")
+            --print("New backup saved")
             File:close()
         else
-            print("Failed to access API, using backup instead.")
+            print("Failed to access ISS, using backup data instead.")
             io.input(_path.code .. "ufo/" .. backup)
             dl = io.read("*all")
         end
         process(dl)
         areweloaded = true
-
-        -- Update engine parameters
-        -- latitude
-        params:set(mappings.latitude.parameter,
-            map(lat,
-                mappings.latitude.inmin,
-                mappings.latitude.inmax,
-                mappings.latitude.outmin,
-                mappings.latitude.outmax))
-
-        -- longitude
-        params:set(
-            mappings.longitude.parameter,
-            map(lon,
-                mappings.longitude.inmin,
-                mappings.longitude.inmax,
-                mappings.longitude.outmin,
-                mappings.longitude.outmax))
-
-        -- distance
-        if usedist then
-            params:set(
-                mappings.distance.parameter,
-                map(dist,
-                    mappings.distance.inmin,
-                    mappings.distance.inmax,
-                    mappings.distance.outmin,
-                    mappings.distance.outmax))
-        end
-
-        -- Set crow output voltages
-        -- latitude
-        crow.output[1].volts = map(
-            lat,
-            mappings.latitude.inmin,
-            mappings.latitude.inmax,
-            -5, 5)
-
-        -- longitude
-        crow.output[2].volts = map(
-            lon,
-            mappings.longitude.inmin,
-            mappings.longitude.inmax,
-            0, 10)
-
-        -- distance
-        if usedist then
-            crow.output[3].volts = map(
-                dist,
-                mappings.distance.inmin,
-                mappings.distance.inmax,
-                0, 10)
+        if (api_update) then
+            update_engine()
+            update_crow()
         end
 
         screen_dirty = true
@@ -186,17 +168,60 @@ end
 function process(download)
     -- decode json
     local everything = json.decode(download)
-    lat = everything.latitude
-    lon = everything.longitude
+    if api_update then
+        print("Updating coordinates")
+        lat = everything.latitude
+        lon = everything.longitude
+        if (usedist) then
+            dist = distance(lat, lon, localLat, localLon)
+        end
+    else
+        print("Updates turned off")
+    end
+
     print("latitude: " .. lat)
     print("longitude: " .. lon)
-
     if (usedist) then
-        dist = distance(lat, lon, localLat, localLon)
         print("distance: " .. dist)
     end
 
     print(" ")
+end
+
+function update_engine()
+    -- Update engine parameters
+    -- latitude
+    -- note, uses math.abs() - so values *away from the equator* will be larger
+    for i, v in ipairs(mappings.latitude) do
+        params:set(v.parameter, map(math.abs(lat), v.inmin, v.inmax, v.outmin, v.outmax))
+    end
+
+    -- longitude
+    for i, v in ipairs(mappings.longitude) do
+        params:set(v.parameter, map(lon, v.inmin, v.inmax, v.outmin, v.outmax))
+    end
+
+    -- distance
+    if usedist then
+        for i, v in ipairs(mappings.distance) do
+            params:set(v.parameter, map(dist, v.inmin, v.inmax, v.outmin, v.outmax))
+        end
+    end
+end
+
+function update_crow()
+    -- Set crow output voltages
+    -- latitude
+    -- note that this does not use math.abs() - you'll get negative values out for negative latitudes
+    crow.output[1].volts = map(lat, -51.6, 51.6, -5, 5)
+
+    -- longitude
+    crow.output[2].volts = map(lon, -180, 180, 0, 10)
+
+    -- distance
+    if usedist then
+        crow.output[3].volts = map(dist, 0, 1, 0, 10)
+    end
 end
 
 -- Visuals
@@ -206,21 +231,28 @@ function redraw()
         screen.clear()
         screen.aa(1)
         screen.font_size(10)
-        screen.font_face(4)
+        screen.font_face(1)
 
         -- draw the map
         screen.level(2)
         screen.display_png(_path.code .. 'ufo/world-8bit.png', 0, 0)
 
         -- draw the iss
-        screen.level(10)
+        screen.level(iss_brightness)
         x = map(lon, -180, 180, 0, 128)
         y = map(lat, -90, 90, 64, 0)
         screen.display_png(_path.code .. 'ufo/iss.png', x - 4.5, y - 2.5)
+
+        screen.level(10)
+        if (not audiobroadcast) then
+            screen.move(64, 62)
+            screen.level(16)
+            screen.font_size(6)
+            screen.text_center("press k3 to receive audio signals")
+        end
     else
         screen.aa(1)
         screen.font_size(8)
-        screen.font_face(1)
         screen.level(15)
         screen.move(64, 32)
         screen.text_center("please wait - loading...")
@@ -268,7 +300,7 @@ function add_params()
 
     -- mix control
     params:add_control('eng_mix', 'mix',
-      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_mix',
         function(x)
             engine.mix(x)
@@ -278,7 +310,7 @@ function add_params()
 
     -- detune control
     params:add_control('eng_detune', 'detune',
-      controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.75, '', 0.005))
     params:set_action('eng_detune',
         function(x)
             engine.detune(x)
@@ -288,13 +320,12 @@ function add_params()
 
     -- frequency cutoof min control
     params:add_control('eng_cutoff_min', 'filter cutoff min',
-      controlspec.new(40, 16000, 'exp', 10, 400, ''))
+        controlspec.new(40, 16000, 'exp', 10, 400, ''))
     params:set_action('eng_cutoff_min',
         function(x)
-
             if x > params:get("eng_cutoff_max") then
-              x = params:get("eng_cutoff_max")
-              params:set("eng_cutoff_min",x)
+                x = params:get("eng_cutoff_max")
+                params:set("eng_cutoff_min", x)
             end
             engine.cutoffMin(x)
             screen_dirty = true
@@ -303,14 +334,24 @@ function add_params()
 
     -- frequency cutoof max control
     params:add_control('eng_cutoff_max', 'filter cutoff max',
-      controlspec.new(40, 16000, 'exp', 10, 8500, ''))
+        controlspec.new(40, 16000, 'exp', 10, 8500, ''))
     params:set_action('eng_cutoff_max',
-          function(x)
+        function(x)
             if x < params:get("eng_cutoff_min") then
-              x = params:get("eng_cutoff_min")
-              params:set("eng_cutoff_max",x)
+                x = params:get("eng_cutoff_min")
+                params:set("eng_cutoff_max", x)
             end
             engine.cutoffMax(x)
+            screen_dirty = true
+        end
+    )
+
+    -- HPF frequency cutoff control
+    params:add_control('hpf_cutoff', 'high pass filter cutoff',
+        controlspec.new(40, 16000, 'exp', 400, 8500, ''))
+    params:set_action('hpf_cutoff',
+        function(x)
+            engine.hpfCutoff(x)
             screen_dirty = true
         end
     )
@@ -333,7 +374,7 @@ function add_params()
 
     -- absorb control
     params:add_control('eng_absorb', 'absorb',
-      controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.1, '', 0.005))
     params:set_action('eng_absorb',
         function(x)
             engine.absorb(x)
@@ -343,7 +384,7 @@ function add_params()
 
     -- modulation control
     params:add_control('eng_modulation', 'modulation',
-      controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
+        controlspec.new(0, 1, 'lin', 0.001, 0.01, '', 0.005))
     params:set_action('eng_modulation',
         function(x)
             engine.modulation(x)
@@ -353,7 +394,7 @@ function add_params()
 
     -- modRate control
     params:add_control('eng_modRate', 'modRate',
-      controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005)) 
+        controlspec.new(0, 1, 'lin', 0.001, 0.05, '', 0.005))
     params:set_action('eng_modRate',
         function(x)
             engine.modRate(x)
@@ -363,7 +404,7 @@ function add_params()
 
     -- delay control
     params:add_control('eng_delay', 'delay',
-    controlspec.new(0, 3, 'lin', 0.001, 0.3, '', 0.005)) 
+        controlspec.new(0, 3, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_delay',
         function(x)
             engine.delay(x)
@@ -372,6 +413,9 @@ function add_params()
     )
     -- add the notes_scales params
     ns.add_params()
+    params:add_binary("reset_notes", "Reset note list", "momentary")
+    params:set_action("reset_notes", reset_default_notes)
+
     ns.build_scale()
     get_midi_devices()
     params:bang()
@@ -427,9 +471,39 @@ function distance(lat1, lon1, lat2, lon2)
 end
 
 function enc(n, d)
+end
 
+-- when a key is depressed, toggle audio playback
+function key(n, z)
+    if n == 3 and z == 1 then
+        if audiobroadcast then
+            audiobroadcast = false
+            print("Audio signal lost")
+            engine.stop(0)
+            --params:set("eng_amp", 0)
+        else
+            audiobroadcast = true
+            print("Receiving audio signal")
+            engine.start(0)
+            --params:set("eng_amp", 1)
+        end
+    end
 end
 
 function cleanup()
-  
+    -- Stop the engine
+    engine.stop(0)
+end
+
+-- For testing
+function setcoords(newlat, newlon, newdist)
+    newlat = newlat or lat
+    newlon = newlon or lon
+    newdist = newdist or dist
+    lat = newlat
+    lon = newlon
+    dist = newdist
+    update_engine()
+    update_crow()
+    screen_dirty = true
 end

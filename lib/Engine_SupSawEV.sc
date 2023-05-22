@@ -19,6 +19,7 @@ Engine_SupSawEV : CroneEngine {
   var detuneEV = 0.5;
   var cutoffMin=400;
   var cutoffMax=8500;
+  var hpfCutoff=440;
   
   *new { arg context, doneCallback;
     ^super.new(context, doneCallback);
@@ -32,7 +33,7 @@ Engine_SupSawEV : CroneEngine {
     
     SynthDef(\superSaw,{
       arg out,freq = 523.3572, mix=0.75, detune = 0.75, amp=1,
-      cutoffMin=400,cutoffMax=8500;
+      cutoffMin=400,cutoffMax=8500,hpfCutoff=440;
       var env = Env(
         levels: [0, 0.1, 1, 0.2],
         times: [0.5, 3, 3],
@@ -81,8 +82,8 @@ Engine_SupSawEV : CroneEngine {
       /////////////////
       // moog ladder filter
       sig = MoogLadder.ar(Mix(sig ! 2), LinExp.kr(LFCub.kr(0.1, 0.5*pi), -1, 1, cutoffMin, cutoffMax), 0.75);
-
-      // sig = Limiter.ar(sig, 0.4, 0.01);
+      sig = HPF.ar(in: sig, freq: hpfCutoff); // CHANGE THIS
+      sig = Limiter.ar(sig, 0.3, 0.01);
       
       Out.ar(out,sig*amp*EnvGen.kr(env,doneAction: Done.freeSelf));
       // Out.ar(out,sig*amp);
@@ -143,10 +144,9 @@ Engine_SupSawEV : CroneEngine {
         // (["ampEV",ampEV]).postln;
         // (["voices",voices]).postln;
         voices.addFirst(newVoice);
-        
         2.wait;
       });
-    }).play();
+    });
 
     //voice commands
     this.addCommand("amp", "f", { arg msg;
@@ -174,6 +174,10 @@ Engine_SupSawEV : CroneEngine {
       voiceGroup.set(\cutoffMax, cutoffMax);
     });
 
+    this.addCommand("hpfCutoff", "f", { arg msg;
+      hpfCutoff = msg[1];
+      voiceGroup.set(\hpfCutoff, hpfCutoff);
+    });
 
     //reverb commands
     this.addCommand("decay", "f", { arg msg;
@@ -206,7 +210,9 @@ Engine_SupSawEV : CroneEngine {
       var scale;
       for (0, num_notes-1, { arg i;
         var val = msg[i+1];
-        newNotes.insert(i,val);
+        if (val!=9999, {
+          newNotes.insert(i,val)
+          });
       }); 
       notes=newNotes;
       (["update scale",notes]).postln;
@@ -218,7 +224,8 @@ Engine_SupSawEV : CroneEngine {
     });
     
     this.addCommand("start", "f", { arg msg;
-      routine.value();
+      routine.reset();
+      routine.play();
     });
 
   }
