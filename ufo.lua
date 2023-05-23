@@ -44,25 +44,25 @@ api_update = false;
 local mappings = {
     -- Latitude mappings
     latitude = { {
-        parameter = "eng_absorb", -- Change this for different sound mappings
-        inmin = 0,                -- Don't change this
-        inmax = 51.6,             -- Don't change this
-        outmin = 0,               -- Change this to adjust the range of permitted values
-        outmax = 0.6              -- Change this to adjust the range of permitted values
+        parameter = "eng_cutoff_max", -- Change this for different sound mappings
+        inmin = 0,                    -- Don't change this
+        inmax = 51.6,                 -- Don't change this
+        outmin = 1000,                -- Change this to adjust the range of permitted values
+        outmax = 16000                -- Change this to adjust the range of permitted values
     }, {
-        parameter = "eng_delay",  -- Change this for different sound mappings
-        inmin = 0,                -- Don't change this
-        inmax = 51.6,             -- Don't change this
-        outmin = 0,               -- Change this to adjust the range of permitted values
-        outmax = 1.05             -- Change this to adjust the range of permitted values
+        parameter = "eng_modulation", -- Change this for different sound mappings
+        inmin = 0,                    -- Don't change this
+        inmax = 51.6,                 -- Don't change this
+        outmin = 0.03,                -- Change this to adjust the range of permitted values
+        outmax = 0.01                 -- Change this to adjust the range of permitted values
     } },
     -- Longitude mappings
     longitude = { {
-        parameter = "eng_decay", -- Change this for different sound mappings
-        inmin = -180,            -- Don't change this
-        inmax = 180,             -- Don't change this
-        outmin = 0.2,            -- Change this to adjust the range of permitted values
-        outmax = 1.4             -- Change this to adjust the range of permitted values
+        parameter = "eng_absorb", -- Change this for different sound mappings
+        inmin = -180,             -- Don't change this
+        inmax = 180,              -- Don't change this
+        outmin = 0.15,            -- Change this to adjust the range of permitted values
+        outmax = 0.9              -- Change this to adjust the range of permitted values
     } },
     -- Distance mappings
     distance = { {
@@ -265,7 +265,7 @@ function add_params()
             2,     -- max
             'lin', -- warp
             0.001, -- output quantization
-            1,     -- default value
+            0.5,   -- default value
             '',    -- string for units
             0.005  -- adjustment quantization
         ),
@@ -336,8 +336,8 @@ function add_params()
 
     -- decay control
     params:add_control('eng_decay', 'decay',
-      controlspec.new(0, 0.2, 'lin', 0.001, 0.1, '', 0.005))
-      -- controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
+        controlspec.new(0, 0.2, 'lin', 0.001, 0.1, '', 0.005))
+    -- controlspec.new(0, 1.5, 'lin', 0.001, 0.3, '', 0.005))
     params:set_action('eng_decay',
         function(x)
             engine.decay(x)
