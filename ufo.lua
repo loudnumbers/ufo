@@ -346,16 +346,6 @@ function add_params()
         end
     )
 
-    -- HPF frequency cutoff control
-    params:add_control('hpf_cutoff', 'high pass filter cutoff',
-        controlspec.new(40, 16000, 'exp', 400, 8500, ''))
-    params:set_action('hpf_cutoff',
-        function(x)
-            engine.hpfCutoff(x)
-            screen_dirty = true
-        end
-    )
-
     ------------------------------
     -- reverb controls
     ------------------------------
