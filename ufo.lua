@@ -3,9 +3,10 @@
 --
 -- ultra-low frequency oscillator
 --
--- timbres informed by
--- the current position of
--- the international space
+-- timbres and modulation
+-- informed by the current
+-- position of the
+-- international space
 -- station above the earth.
 --
 -- sonification by
@@ -453,13 +454,12 @@ function key(n, z)
             audiobroadcast = false
             print("Audio signal lost")
             engine.stop(0)
-            --params:set("eng_amp", 0)
         else
             audiobroadcast = true
             print("Receiving audio signal")
             engine.start(0)
-            --params:set("eng_amp", 1)
         end
+        screen_dirty = true;
     end
 end
 
