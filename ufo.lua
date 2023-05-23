@@ -103,22 +103,6 @@ function init()
     -- start a clock to refresh the data
     clock.run(grabdata_clock)
 
-    iss_brightness = 0;
-    brightness_lfo = lfos:add {
-        shape = 'saw', -- shape
-        min = 0,       -- min
-        max = 15,      -- max
-        depth = 1,     -- depth (0 to 1)
-        mode = 'free', -- mode
-        period = 1,    -- period (in seconds)
-        -- pass our 'scaled' value (bounded by min/max and depth) to the engine:
-        action = function(scaled, raw)
-            iss_brightness = math.floor(scaled)
-            screen_dirty = true
-        end -- action, always passes scaled and raw values
-    }
-    brightness_lfo:start()
-
     -- Start a clock to refresh the screen
     screen_dirty = true
 
@@ -238,7 +222,6 @@ function redraw()
         screen.display_png(_path.code .. 'ufo/world-8bit.png', 0, 0)
 
         -- draw the iss
-        screen.level(iss_brightness)
         x = map(lon, -180, 180, 0, 128)
         y = map(lat, -90, 90, 64, 0)
         screen.display_png(_path.code .. 'ufo/iss.png', x - 4.5, y - 2.5)
