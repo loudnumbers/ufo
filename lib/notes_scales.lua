@@ -40,7 +40,7 @@ ns.quantize_note = function(note_num)
   end
 
   if new_note_num == nil then
-    print(note_num, scale[1])
+    --print(note_num, scale[1])
     if note_num < scale[1] then
       new_note_num = scale[1]
     else
@@ -72,7 +72,10 @@ function ns.add_params()
     return MusicUtil.note_num_to_name(param:get(), true)
   end
   }
-  params:set_action("root_note", function() ns.build_scale() end)
+  params:set_action("root_note", function()
+    quantize_notes_to_scale()
+    ns.build_scale()
+  end)
 
   ------------------------------
   -- midi controls
