@@ -1,6 +1,6 @@
 # ufo
 
-Ultra-low Frequency Oscillator
+Ultra-low Frequency Oscillator, powered by the International Space Station
 
 This is a script for the Monome Norns that uses the International Space Station (ISS) as a low-frequency oscillator, with a period of about 90 minutes. It grabs data from the [Where The ISS At? API](https://wheretheiss.at/), and maps the location of the ISS over the Earth to sound.
 
