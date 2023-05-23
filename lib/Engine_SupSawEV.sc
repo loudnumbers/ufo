@@ -17,8 +17,8 @@ Engine_SupSawEV : CroneEngine {
   var ampEV = 0.5;
   var mixEV = 0.5;
   var detuneEV = 0.5;
-  var cutoffMin=400;
-  var cutoffMax=8500;
+  var cutoffMinEV=400;
+  var cutoffMaxEV=8500;
   
   *new { arg context, doneCallback;
     ^super.new(context, doneCallback);
@@ -32,7 +32,7 @@ Engine_SupSawEV : CroneEngine {
     
     SynthDef(\superSaw,{
       arg out,freq = 523.3572, mix=0.75, detune = 0.75, amp=1,
-      cutoffMin=400,cutoffMax=8500;
+      cutoffMin=400,cutoffMax=10000;
       var env = Env(
         levels: [0, 0.1, 1, 0.2],
         times: [0.5, 3, 3],
@@ -81,6 +81,7 @@ Engine_SupSawEV : CroneEngine {
       /////////////////
       // moog ladder filter
       sig = MoogLadder.ar(Mix(sig ! 2), LinExp.kr(LFCub.kr(0.1, 0.5*pi), -1, 1, cutoffMin, cutoffMax), 0.75);
+      //([cutoffMin, cutoffMax]).poll;
       sig = Limiter.ar(sig, 0.3, 0.01);
       
       Out.ar(out,sig*amp*EnvGen.kr(env,doneAction: Done.freeSelf));
@@ -133,6 +134,8 @@ Engine_SupSawEV : CroneEngine {
             \mix, mixEV,
             \detune, detuneEV,
             \amp, ampEV,
+            \cutoffMin, cutoffMinEV,
+            \cutoffMax, cutoffMaxEV,
             \out, effectsBus,
           ],
           target: voiceGroup).onFree({ 
@@ -163,13 +166,13 @@ Engine_SupSawEV : CroneEngine {
     });
 
     this.addCommand("cutoffMin", "f", { arg msg;
-      cutoffMin = msg[1];
-      voiceGroup.set(\cutoffMin, cutoffMin);
+      cutoffMinEV = msg[1];
+      voiceGroup.set(\cutoffMin, cutoffMinEV);
     });
 
     this.addCommand("cutoffMax", "f", { arg msg;
-      cutoffMax = msg[1];
-      voiceGroup.set(\cutoffMax, cutoffMax);
+      cutoffMaxEV = msg[1];
+      voiceGroup.set(\cutoffMax, cutoffMaxEV);
     });
 
     //reverb commands
