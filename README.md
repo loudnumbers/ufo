@@ -22,6 +22,13 @@ Additionally, the script generates a trio of voltages that it spits out through 
 - out 2: longitude (0-10V)
 - out 3: distance from your position to ISS (0-10V) - only if enabled in script
 
+## Thanks
+
+To Jonathan Snyder for endless sound design and code help
+To Alanza for the emulation of erbeverb reverb
+To Eric Skogen for the [Supercollider supersaw code](https://gist.github.com/audionerd/fe50790b7601cba65ddd855caffb05ad)
+To Monome and the Norns community for everything <3
+
 ## Changelog
 
 ### v1.0
