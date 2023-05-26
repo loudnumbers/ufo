@@ -39,7 +39,7 @@ local localLon = 12.69437;
 local usedist = true;
 
 -- For testing
-api_update = false;
+api_update = true;
 
 -- Set custom engine mappings if you desire
 local mappings = {
