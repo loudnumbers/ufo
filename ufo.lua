@@ -1,5 +1,5 @@
 -- ufo
--- v0.2 @duncangeere
+-- v1.0 @duncangeere
 --
 -- ultra-low frequency oscillator
 --
@@ -39,7 +39,7 @@ local localLon = 12.69437;
 local usedist = true;
 
 -- For testing
-api_update = true;
+local api_update = true;
 
 -- Set custom engine mappings if you desire
 local mappings = {
